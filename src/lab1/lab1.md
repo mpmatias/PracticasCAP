@@ -87,3 +87,73 @@ void axpy(float *c, float *a, float *b, float cte, int n)
 }
 ```
 
+
+# Ejemplos
+## Opciones de compilación 
+* Especifica las [optimizaciones en compilación](https://software.intel.com/en-us/cpp-compiler-developer-guide-and-reference-o): -O[n]
+    * Por defecto el compilador utiliza **-O2**
+* El código de ejemplo está [disponible](CompilerOpt/foo.c)
+
+|   |   |
+|---|---|
+| **O0** |  Deshabilita cualquier optimización                                                   |
+| **O1** |  Habilita optimizaciones que incrementan tamaño código pero lo acelera                |
+|        |  Optimización global: analisis de flujo, análisis de vida de variables                |
+|        |  Deshabilita inlining y uso de intrinsecas                                            |
+| **O2** | **Activa vectorización**                                                              |
+|        | Optimización a nivel de bucle                                                         |
+|        | Optimización entre funciones                                                          |
+| **O3** | O2+ Opt. más agresiva: fusión de bucles, unroll                                       |
+|        | Adecuada para código basados en bucles y cómputo fp                                   |
+
+[^2]: \url{}
+
+## Opciones de compilación
+* El código de ejemplo está [disponible](CompilerOpt/foo.c)
+    * **O0**: Deshabilita cualquier optimización
+    * **qopt-report=3** genera reporte en fichero foo.optprt
+    * **-lm** enlaza con la librería matemática
+
+```sh
+user@lab:~ $ icc -o fooO0 foo.c -O0 -qopt-report=3 -lm
+user@lab:~ $ more foo.optrpt 
+Intel(R) Advisor can now assist with vectorization and show optimization
+  report messages with your source code.
+See "https://software.intel.com/en-us/intel-advisor-xe" for details.
+
+Intel(R) C Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.5.0 Build 20211109_000000
+```
+
+## Opciones de compilación
+* El código de ejemplo está [disponible](CompilerOpt/foo.c)
+    * **O2**: Activa vectorización, en el **reporte indica que en la línea 30** está vectorizado
+
+
+```sh
+user@lab:~ $ icc -o foo02 foo.c -O2 -qopt-report=3 -lm
+user@lab:~ $ more foo.optrpt 
+....
+LOOP BEGIN at foo.c(30,2) inlined into foo.c(60,43)
+   remark #15300: LOOP WAS VECTORIZED
+   remark #15442: entire loop may be executed in remainder
+   remark #15448: unmasked aligned unit stride loads: 1 
+   remark #15475: --- begin vector cost summary ---
+   remark #15476: scalar cost: 5 
+   remark #15477: vector cost: 1.250 
+   remark #15478: estimated potential speedup: 3.480 
+   remark #15488: --- end vector cost summary ---
+LOOP END
+
+....
+```
+
+## Cálculo potencial eléctrico
+* Cálculo de potencial eléctrico, [código disponible](ElectricPotential/) 
+    * [Enlace al libro extraido!](https://colfaxresearch.com/second-edition-of-parallel-programming-and-optimization-with-intel-xeon-phi-coprocessors/)
+    * [Extrido del github!](https://github.com/ColfaxResearch/HOW-Series-Labs/tree/master/4/4.02-vectorization-data-structures-coulomb)
+
+
+
+
+
+

@@ -1,7 +1,0 @@
-25 [140339486062336] INFO mrtehelpers.mrteenv <> - Product libs directory: /opt/intel/inteloneapi/advisor/2021.1-beta07/lib64
-25 [140339486062336] INFO mrtehelpers.mrteenv <> - File mask: advixe_tpssmrte_clrprof*
-30 [140339486062336] INFO mrtehelpers.mrteenv <> - File name: lib
-30 [140339486062336] INFO mrtehelpers.mrteenv <> - File mask: advixe_tpssmrte_clrprof*
-34 [140339486062336] INFO mrtehelpers.mrteenv <> - File name: lib
-34 [140339486062336] ERROR mrtehelpers.mrteenv <> - Failed to init shared librarylib located at /opt/intel/inteloneapi/advisor/2021.1-beta07/lib64, at file: vcs/mrtehelpers3/src/mrteenv/mrte_profiling_initializer.cpp:485
-34 [140339486062336] ERROR mrtehelpers.mrteenv <> - CLR support is disabled because profiler GUID is empty, at file: vcs/mrtehelpers3/src/mrteenv/mrte_profiling_initializer.cpp:308

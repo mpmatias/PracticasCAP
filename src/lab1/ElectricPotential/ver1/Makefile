@@ -1,5 +1,5 @@
 CXX = icpc
-COMPFLAGS = -g -std=c++11 -O2 -I. -xHost
+COMPFLAGS = -g -std=c++11 -O2 -I.
 INCLUDES = 
 
 CXXFLAGS = $(COMPFLAGS) 
