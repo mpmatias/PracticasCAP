@@ -167,14 +167,14 @@ LOOP END
     5. Memoria alineada
 * Uso de vectorización guiada porque en [algunos códigos](BlackScholes/) aparecen dependencias de datos aparentes que **inhiben la auyto-vectorización** por parte del compilador
     1. En el directorio "BlackScholes", al compilar con la opción de autovectorizacion (O2) y consultando el report del fichero fuente *black-scholes.c*, se puede ver el mensaje *vector dependence prevents vectorization*
-
+    2. Se recomiendo usar alguna de las *pragma* estudias para "forzar" al compilador a generar código vectorial
 ```sh
 LOOP BEGIN at black-scholes.c(82,5)
    remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
    remark #15346: vector dependence: assumed ANTI dependence between s0[i] (84:13) and vput[i] (100:9)
 LOOP END
 ```
-    2. Se recomiendo usar alguna de las *pragma* estudias para "forzar" al compilador a generar código vectorial
+
 * Programación con Intrínsecas haciendo uso de la [Guía de Intrínsecas](https://software.intel.com/sites/landingpage/IntrinsicsGuide/) 
     * El código a utilizar está en el [directorio Intrinsics](Intrinsics/)
 
