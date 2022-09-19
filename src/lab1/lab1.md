@@ -22,7 +22,7 @@ flags		: ... avx ... avx2 ...
 * Opciones del compilador para llevar a cabo optimizaciones
 
 ## Autovectorización
-* La opción **-O2** habilita al autovectorizador
+* La opción **-O2** del compilador de [Intel® C++ Compiler Classic](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit.html#gs.cddfmt) habilita al autovectorizador
 
 ```console
 user@lab:~ $ icc -o fooO2 foo.c -O2 -qopt-report=3 -xhost -lm
@@ -124,9 +124,7 @@ See "https://software.intel.com/en-us/intel-advisor-xe" for details.
 Intel(R) C Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.5.0 Build 20211109_000000
 ```
 
-## Opciones de compilación
-* El código de ejemplo está [disponible](CompilerOpt/foo.c)
-    * **O2**: Activa vectorización, en el **reporte indica que en la línea 30** está vectorizado
+    * Modificando la opción de compilación a **O2**: Activa vectorización, en el **reporte indica que en la línea 30** está vectorizado
 
 
 ```sh
@@ -148,12 +146,37 @@ LOOP END
 ```
 
 ## Cálculo potencial eléctrico
-* Cálculo de potencial eléctrico, [código disponible](ElectricPotential/) 
-    * [Enlace al libro extraido!](https://colfaxresearch.com/second-edition-of-parallel-programming-and-optimization-with-intel-xeon-phi-coprocessors/)
-    * [Extrido del github!](https://github.com/ColfaxResearch/HOW-Series-Labs/tree/master/4/4.02-vectorization-data-structures-coulomb)
+* Cálculo de potencial eléctrico, [código disponible](ElectricPotential/)
+    * [Enlace al libro extraido](https://colfaxresearch.com/second-edition-of-parallel-programming-and-optimization-with-intel-xeon-phi-coprocessors/)
+    * [Extraido del github!](https://github.com/ColfaxResearch/HOW-Series-Labs/tree/master/4/4.02-vectorization-data-structures-coulomb)
 
+* 4 versiones
+    * ver0: versión sin optimizar
+        * Conviene prestar atención a las opciones de compilación (añadir arquitectura) y ver ineficiencias (conversiones de datos)
+    * ver1: optimizado a la arquitectatura *target*, pero con ineficiencias de acceso a memoria (stride!=1)
+        * Propuesta cambiar AoS por SoA
+    * ver2: optimización de memoria
+    * ver3: optimizacion de memoria a accesos alineados
 
+# Tareas a realizar por el alumno
+* Aplicar explotación SIMD utilizando la vectorización automática por parte del compilador en la aplicación de N-Body cuyo [código está disponible en el repositorio](NBody/)
+    1. Vectorización autovectorizada
+    2. Eliminación de "dependencias" en bucles (desalineación de punteros o \#pragma)
+    3. Eliminación de conversión de tipos de datos (float/double)
+    4. Accesos a memoria (**¿stride?**): SoA vs AoS
+    5. Memoria alineada
+* Uso de vectorización guiada porque en [algunos códigos](BlackScholes/) aparecen dependencias de datos aparentes que **inhiben la auyto-vectorización** por parte del compilador
+    1. En el directorio "BlackScholes", al compilar con la opción de autovectorizacion (O2) y consultando el report del fichero fuente *black-scholes.c*, se puede ver el mensaje *vector dependence prevents vectorization*
 
+```sh
+LOOP BEGIN at black-scholes.c(82,5)
+   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
+   remark #15346: vector dependence: assumed ANTI dependence between s0[i] (84:13) and vput[i] (100:9)
+LOOP END
+```
+    2. Se recomiendo usar alguna de las *pragma* estudias para "forzar" al compilador a generar código vectorial
+* Programación con Intrínsecas haciendo uso de la [Guía de Intrínsecas](https://software.intel.com/sites/landingpage/IntrinsicsGuide/) 
+    * El código a utilizar está en el [directorio Intrinsics](Intrinsics/)
 
 
 
