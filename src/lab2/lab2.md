@@ -60,7 +60,7 @@ remark #16201: OpenMP DEFINED REGION WAS PARALLELIZED
 ```
 
 * Para controlar el número de hilos de ejecución se puede hacer de varias formas:
-    * Variable de entorno **OMP_NUM_THREADS**
+    * Con la variable de entorno *OMP_NUM_THREADS*
     * En la pragma ```#pragma omp parallel num_threads(3)```
 
 ```sh
@@ -73,40 +73,151 @@ Hello World from thread 1 of 3 threads
 Hello World from thread 2 of 3 threads
 ```
 
-### 
+### Directivas de trabajo compartido
+* En OpenMP existen varias formas de explicitar la distribución del trabajo entre los hilos
+    * ```#pragma omp for/#pragma omp parallel for``` para distribuir las iteraciones de los bucles entre los hilos disponibles
+    * ```#pragma omp sections``` para crear secciones de código concurrente entre hilos
+    * ```#pragma omp single``` para expresar una región secuencial dentro de una región paralela
+* En este [segundo ejemplo](TrabajoCompartido/prime.c) trabajaremos dos aspectos:
+    * Distribución de trabajo entre hilos
+    * Gestión de variables (privadas, compartidas...)
 
-## Cálculo potencial eléctrico
-* Cálculo de potencial eléctrico, [código disponible](ElectricPotential/)
-    * [Enlace al libro extraido](https://colfaxresearch.com/second-edition-of-parallel-programming-and-optimization-with-intel-xeon-phi-coprocessors/)
-    * [Extraido del github!](https://github.com/ColfaxResearch/HOW-Series-Labs/tree/master/4/4.02-vectorization-data-structures-coulomb)
+* El ejemplo ["prime.c"](TrabajoCompartido/prime.c)  calcula los números primos menores a un determinado **n** (parámetro de entrada)
+    * **i** es primo si no tiene divisores $(2,i/2)$
+    * ```#define DEBUG``` visualiza la lista de primos
 
-* 4 versiones
-    * ver0: versión sin optimizar
-        * Conviene prestar atención a las opciones de compilación (añadir arquitectura) y ver ineficiencias (conversiones de datos)
-    * ver1: optimizado a la arquitectatura *target*, pero con ineficiencias de acceso a memoria (stride!=1)
-        * Propuesta cambiar AoS por SoA
-    * ver2: optimización de memoria
-    * ver3: optimizacion de memoria a accesos alineados
-
-# Tareas a realizar por el alumno
-* Aplicar explotación SIMD utilizando la vectorización automática por parte del compilador en la aplicación de N-Body cuyo [código está disponible en el repositorio](NBody/)
-    1. Vectorización autovectorizada
-    2. Eliminación de "dependencias" en bucles (desalineación de punteros o \#pragma)
-    3. Eliminación de conversión de tipos de datos (float/double)
-    4. Accesos a memoria (**¿stride?**): SoA vs AoS
-    5. Memoria alineada
-* Uso de vectorización guiada porque en [algunos códigos](BlackScholes/) aparecen dependencias de datos aparentes que **inhiben la auyto-vectorización** por parte del compilador
-    1. En el directorio "BlackScholes", al compilar con la opción de autovectorizacion (O2) y consultando el report del fichero fuente *black-scholes.c*, se puede ver el mensaje *vector dependence prevents vectorization*
-    2. Se recomiendo usar alguna de las *pragma* estudias para "forzar" al compilador a generar código vectorial
-```sh
-LOOP BEGIN at black-scholes.c(82,5)
-   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
-   remark #15346: vector dependence: assumed ANTI dependence between s0[i] (84:13) and vput[i] (100:9)
-LOOP END
+```c
+	//#pragma omp parallel...
+	for (i=2; i<n; i++)
+	{
+		not_flag = 0;
+		j=2;
+		while(j<=i/2 && !not_flag)
+		{
+			if(i%j==0) // not prime
+				not_flag=1;
+			j++;
+		}
+		if (j>=i/2 && !not_flag)
+			primes[++k] = i;
+	}
 ```
 
-* Programación con Intrínsecas haciendo uso de la [Guía de Intrínsecas](https://software.intel.com/sites/landingpage/IntrinsicsGuide/) 
-    * El código a utilizar está en el [directorio Intrinsics](Intrinsics/)
+#### Expresión de parelismo
+* Iteraciones del bucle **i** potencialmente paralelas
+    * Iteraciones independientes
+* A tener en cuenta
+    * Uso de variables: privadas, compartidas.... ect
+    * Variable ```++k``` es el índice de la lista de números primos
+        * Posible carrera: problema **read\&update\&write**
+        * Solución: ```#omp critical``` vs ```#omp atomic```
+        * Lista desordenada: implementar un *sort(primes)*
+
+* **A Evaluar** Se recomienda estudiar el impacto de las diferentes políticas de distribución de carga 
+    * *STATIC*
+    * *STATIC, chunk*
+    * *DYNAMIC[, chunk]*
+    * *GUIDED[, chunk]*
+    * *AUTO*
+
+### Condiciones de Carrera
+*  Cálculo de la integral mediante el método del trapecio
+    * Area del trapecio $S=\frac{1}{2}(f(a')+f(b'))*h$
+    * Integral como suma de trapecios: $\int_{a}^{b} f(x) \partial x = \sum \frac{f(a')+f(b')}{2}h$
+
+![imagen](figures/trapezoidal-rule.png)
+
+* Podemos destacar dos tipos tareas en el ejemplo:
+    * Cálculo de areas de cada trapecio individual
+    * Acumulación de trapecios (*integral*)
+
+
+```c
+double Trap(double a, double b, int n, double h) {
+	double integral, area;
+	int k;
+
+	integral = 0.0;
+	for (k = 1; k <= n; k++) {
+		area = h*(f(a+k*h)+f(a+(k-1)*h))/2.0;
+		integral+=area;
+	}
+
+	return integral;
+}  /* Trap */
+```
+### Tareas OMP
+* Tareas OMP = unidades de trabajo (ejecución puede diferirse)
+* Las tareas se componen de:
+    * código para ejecutar y datos
+* Hilos pueden **cooperar** para ejecutarlas
+* Ejemplo Fibonacci
+
+```c
+long comp_fib_numbers(int n)
+{
+	long fnm1, fnm2, fn;
+	if ( n == 0 || n == 1 ) return(1);
+	if ( n<20 ) return(comp_fib_numbers(n-1) +comp_fib_numbers(n-2));
+
+	#pragma omp task...
+	{fnm1 = comp_fib_numbers(n-1);}
+	#pragma omp task...
+	{fnm2 = comp_fib_numbers(n-2);}
+	#pragma omp...
+	fn = fnm1 + fnm2;
+
+	return(fn);
+}
+
+
+int main(int argc, char* argv[]) {
+	....
+#pragma omp parallel
+{
+	#pragma omp single 
+	fibo = comp_fib_numbers(n);
+}
+	...
+}  /* main */
+```
+
+#### A tener en cuenta
+* Posible carrera: problema **read\&update\&write** en la variable *integral*
+    * Estudiar las diferentes alternativas:
+        * Uso de ```atomic```, ```critical```
+        * Expresión de paralelismo con ```#pragma omp for``` pero usando la claúsula **reduction**
+
+```c
+	#pragma omp parallel private(...) firstprivate(...) shared(integral)
+	{
+	id   = ...
+	nths = ...
+	n_per_thread = n/nths;
+
+	k_init_thread = ...
+	k_end_thread  = ...
+
+	integral = 0.0;
+	for (k = k_init_thread; k <= k_end_thread; k++) {
+		area = h*(f(a+k*h)+f(a+(k-1)*h))/2.0;
+		integral_thread+=area;
+	}
+
+	#pragma omp critical
+	{integral += integral_thread;}
+
+	}
+
+	return integral;
+```
+
+
+
+# Tareas a realizar por el alumno
+* Heat2D
+* Sudoku
+* Navier-Stokes
 
 
 
