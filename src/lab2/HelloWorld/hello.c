@@ -11,7 +11,7 @@ int main(){
 	printf("OpenMP with %d max threads\n", omp_get_max_threads () );
 	printf("OpenMP with %d procs available\n", omp_get_num_procs () );
 
-	#pragma omp parallel num_threads(3)
+	#pragma omp parallel
 	{
 	// This code is executed in parallel
 	// by multiple threads

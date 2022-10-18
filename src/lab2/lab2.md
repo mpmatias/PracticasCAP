@@ -110,7 +110,7 @@ Hello World from thread 2 of 3 threads
     * Uso de variables: privadas, compartidas.... ect
     * Variable ```++k``` es el índice de la lista de números primos
         * Posible carrera: problema **read\&update\&write**
-        * Solución: ```#omp critical``` vs ```#omp atomic```
+        * Solución: ```#omp critical```
         * Lista desordenada: implementar un *sort(primes)*
 
 * **A Evaluar** Se recomienda estudiar el impacto de las diferentes políticas de distribución de carga 
@@ -121,15 +121,15 @@ Hello World from thread 2 of 3 threads
     * *AUTO*
 
 ### Condiciones de Carrera
-*  Cálculo de la integral mediante el método del trapecio
+*  El [tercer ejemplo](CondicionesCarrera/trapezoidal.c) cálculo la integral mediante el método del trapecio de acuerdo a la siguiente ecuación
     * Area del trapecio $S=\frac{1}{2}(f(a')+f(b'))*h$
     * Integral como suma de trapecios: $\int_{a}^{b} f(x) \partial x = \sum \frac{f(a')+f(b')}{2}h$
 
 ![imagen](figures/trapezoidal-rule.png)
 
-* Podemos destacar dos tipos tareas en el ejemplo:
+* Podemos destacar **dos tipos tareas**:
     * Cálculo de areas de cada trapecio individual
-    * Acumulación de trapecios (*integral*)
+    * Acumulación de trapecios (*integral*) donde potencialmente pueden aparecer condiciones de carrera
 
 
 ```c
@@ -147,11 +147,12 @@ double Trap(double a, double b, int n, double h) {
 }  /* Trap */
 ```
 ### Tareas OMP
-* Tareas OMP = unidades de trabajo (ejecución puede diferirse)
-* Las tareas se componen de:
-    * código para ejecutar y datos
-* Hilos pueden **cooperar** para ejecutarlas
-* Ejemplo Fibonacci
+* El [cuarto ejemplo](Tareas/fibo_task.c) pone en valor la explotación del paralelismo mediante tareas haciendo uso del algoritmo de Fibonacci
+    * Tareas OMP = unidades de trabajo (ejecución puede diferirse)
+    * Las tareas se componen de:
+        * código para ejecutar y datos
+    * Hilos pueden **cooperar** para ejecutarlas
+ 
 
 ```c
 long comp_fib_numbers(int n)
@@ -220,4 +221,49 @@ int main(int argc, char* argv[]) {
 * Navier-Stokes
 
 
+## Heat2D
+* La ecuación del calor es un problema comúnmente utilizado en los tutoriales de computación paralela
+    * Consiste en la resolución de un [sistema de ecuaciones aplicando el concepto de discretización](https://en.wikipedia.org/wiki/Heat_equation)
+        * Los métodos de discretización más comunes son de primer grado de Euler
+    * Utilizado en computación paralela por el número elevado de celdas que hay que "resolver" simultáneamente
+    * Código [extraido](https://repository.prace-ri.eu/git/CodeVault/training-material/parallel-programming/MPI/-/tree/master/heat-equation) del Advanced Computing in Europe (PRACE)
+* Implementa la ecuación del calor discretiza para punto con stencil mediante el stecil de 5
+
+![imagen](figures/solve-heat2D.png)
+
+```c
+void step(int source_x, int source_y, float *current, float *next)
+{
+...
+  for (unsigned int y = 1; y < N-1; ++y) {
+        for (unsigned int x = 1; x < N-1; ++x) {
+            next[y*N+x] = current[y*N+x] + a * dt *
+				((current[y*N+x+1]   - 2.0*current[y*N+x] + current[y*N+x-1])/dx2 +
+				 (current[(y+1)*N+x] - 2.0*current[y*N+x] + current[(y-1)*N+x])/dy2);
+...
+}
+
+void main()
+{
+	...
+	for (unsigned int it = 0; (it < MAX_ITERATIONS) && (t_diff > MIN_DELTA); ++it) {
+		step(source_x, source_y, current, next);
+		t_diff = diff(current, next);
+		if(it%(MAX_ITERATIONS/10)==0){
+			printf("%u: %f\n", it, t_diff);
+		}
+
+		float * swap = current;
+		current = next;
+		next = swap;
+	}
+...
+}
+```
+
+#### Tareas a considerar
+* Paralelizar el código **heat2d** con el paradigma OpenMP
+     * Presta especial atención a la función *step* y *diff*
+     * Se recomienda utilizar la herramienta [Intel vTune](https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top.html) para encontrar los cuellos de botella y evaluar la escalabilidad de la paralelización OpenMP
+     * No olvides que puedes combinar paralelismo del tipo SIMD con paralelismo multi-hilos en los cores
 
