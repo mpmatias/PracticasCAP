@@ -273,8 +273,9 @@ void main()
 * Implementación de dinámica de fluidos como resolutor de ecuaciones para [motores de juegos](https://www.youtube.com/watch?v=UM3VFnHBiOU)
 
 ### Ecuaciones
-1. $ \frac{\delta u}{\delta t} = -(u \cdot  \nabla)u+\nu \nabla^2u+f $
-2. $ \frac{\delta \rho}{\delta t} = -(u \cdot \nabla)\rho+ \kappa \nabla^2 \rho+S $
+$\frac{\delta u}{\delta t} = -(u \cdot  \nabla)u+\nu \nabla^2u+f$
+$\frac{\delta \rho}{\delta t} = -(u \cdot \nabla)\rho+ \kappa \nabla^2 \rho+S$
+
 * Donde $u$ corresponde a la velocidad y $\rho$ al movimiento de la densidad repecto a la velocidad
 
 
