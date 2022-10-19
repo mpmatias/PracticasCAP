@@ -216,10 +216,12 @@ int main(int argc, char* argv[]) {
 
 
 # Tareas a realizar por el alumno
-* Heat2D
-* Quick-sort
-* Real Fluid Dynamics For Games
+Las tareas a entregar por el alumno corresponde a la implementación paralela mediante el paradigma de programación de OpenMP sobre de tres algoritmos:
+    * Heat2D
+    * Quick-sort
+    * Real Fluid Dynamics For Games
 
+Estos algoritmos se detallan a continuación a la par que las propuesta de optimización/paralelización con OpenMP
 
 ## Heat2D
 * La ecuación del calor es un problema comúnmente utilizado en los tutoriales de computación paralela
@@ -227,7 +229,7 @@ int main(int argc, char* argv[]) {
         * Los métodos de discretización más comunes son de primer grado de Euler
     * Utilizado en computación paralela por el número elevado de celdas que hay que "resolver" simultáneamente
     * Código [extraido](https://repository.prace-ri.eu/git/CodeVault/training-material/parallel-programming/MPI/-/tree/master/heat-equation) del Advanced Computing in Europe (PRACE)
-* Implementa la ecuación del calor discretiza para punto con stencil mediante el stecil de 5
+* El [código](Heat2D/) implementa la ecuación del calor discretiza para punto con stencil mediante el stecil de 5
 
 ![imagen](figures/solve-heat2D.png)
 
@@ -268,6 +270,31 @@ void main()
      * No olvides que puedes combinar paralelismo del tipo SIMD con paralelismo multi-hilos en los cores
 
 ## Quick-sort
+* Algoritmo de ordenación basado en el concepto divide y vencerás
+    1. Elegir un elemento al que llamaremos pivote.
+    2. Mover los demás elementos de la lista a cada lado del pivote
+        * La lista inicial está separada en dos sublistas: con elementos menores y mayores al pivote
+    3. Repetir el proceso de forma recursiva para cada sublista
+
+![imagen[(figures/quickSort.png)
+
+El [código de la carpeta "Quicksort](Quicksort) hace una llamada a la función ```quickSort``` que calcula la posición del pivote (invocación a ```partition```) lo que permite realizar llamadas recursivas a ```quickSort``` para cada una de las sublistas 
+
+```c
+void quickSort(int arr[], int low, int high){
+	if(low < high){
+		int pivot = arr[high];
+		int pos = partition(arr, low, high, pivot);
+		
+		quickSort(arr, low, pos-1);
+		quickSort(arr, pos+1, high);
+	}
+}
+```
+
+#### Tareas a considerar
+1. Crear una región paralela que se invoca con un hilo ```single``` a la hora de invocar la primera vez  la función ```quickSort```
+2. Explotar paralelismo de tareas en las sucesivas llamadas a la función ```quickSort``` para cada sublista
 
 ## Real Fluid Dynamics For Games
 * Implementación de dinámica de fluidos como resolutor de ecuaciones para [motores de juegos](https://www.youtube.com/watch?v=UM3VFnHBiOU)
