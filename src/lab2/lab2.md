@@ -273,15 +273,16 @@ void main()
 * Implementación de dinámica de fluidos como resolutor de ecuaciones para [motores de juegos](https://www.youtube.com/watch?v=UM3VFnHBiOU)
 
 ### Ecuaciones
-$\frac{\delta u}{\delta t} = -(u \cdot  \nabla)u+\nu \nabla^2u+f$
-$\frac{\delta \rho}{\delta t} = -(u \cdot \nabla)\rho+ \kappa \nabla^2 \rho+S$
+* $\frac{\delta u}{\delta t} = -(u \cdot  \nabla)u+\nu \nabla^2u+f$
+
+* $\frac{\delta \rho}{\delta t} = -(u \cdot \nabla)\rho+ \kappa \nabla^2 \rho+S$
 
 * Donde $u$ corresponde a la velocidad y $\rho$ al movimiento de la densidad repecto a la velocidad
 
 
-* Matemáticamente, el estado de un fluido en un instante de tiempo determinado se modela como un vector de velocidad: una función que asigna un vector de velocidad a cada punto del espacio
+Matemáticamente, el estado de un fluido en un instante de tiempo determinado se modela como un vector de velocidad: una función que asigna un vector de velocidad a cada punto del espacio
     * Ej: aire de radiador en una habitación, ciculará ascendentemente debido al aumento de calor 
-* El campo velocidad no es visualmente interesante hasta que se produce movimiento de objetos: como particulas de humo, polvo o las hojas
+El campo velocidad no es visualmente interesante hasta que se produce movimiento de objetos: como particulas de humo, polvo o las hojas
 
 * El modelo se basa en el fluido que recorre una caja, por lo que se modelará como un espacio mediante diferencias finitas
     * ```u[size], v[size], u_prev[size], v_prev[size]``` representan las velocidades en una malla de tamaño ```size=(N+2)*(N+2)```
