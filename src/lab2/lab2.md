@@ -216,10 +216,10 @@ int main(int argc, char* argv[]) {
 
 
 # Tareas a realizar por el alumno
-Las tareas a entregar por el alumno corresponde a la implementación paralela mediante el paradigma de programación de OpenMP sobre de tres algoritmos:
-    * Heat2D
-    * Quick-sort
-    * Real Fluid Dynamics For Games
+* Las tareas a entregar por el alumno corresponde a la implementación paralela mediante el paradigma de programación de OpenMP sobre de tres algoritmos:
+    1. Heat2D
+    2. Quick-sort
+    3. Real Fluid Dynamics For Games
 
 Estos algoritmos se detallan a continuación a la par que las propuesta de optimización/paralelización con OpenMP
 
@@ -265,9 +265,9 @@ void main()
 
 #### Tareas a considerar
 * Paralelizar el código **heat2d** con el paradigma OpenMP
-     * Presta especial atención a la función *step* y *diff*
+     * Prestar especial atención a la función *step* y *diff*
      * Se recomienda utilizar la herramienta [Intel vTune](https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top.html) para encontrar los cuellos de botella y evaluar la escalabilidad de la paralelización OpenMP
-     * No olvides que puedes combinar paralelismo del tipo SIMD con paralelismo multi-hilos en los cores
+     * No olvides que puedes combinar paralelismo del tipo SIMD con paralelismo multi-hilos en los cores (ambos soportados por OpenMP)
 
 ## Quick-sort
 * Algoritmo de ordenación basado en el concepto divide y vencerás
@@ -276,7 +276,7 @@ void main()
         * La lista inicial está separada en dos sublistas: con elementos menores y mayores al pivote
     3. Repetir el proceso de forma recursiva para cada sublista
 
-![imagen[(figures/quickSort.png)
+![imagen](figures/quickSort.png)
 
 El [código de la carpeta "Quicksort](Quicksort) hace una llamada a la función ```quickSort``` que calcula la posición del pivote (invocación a ```partition```) lo que permite realizar llamadas recursivas a ```quickSort``` para cada una de las sublistas 
 
