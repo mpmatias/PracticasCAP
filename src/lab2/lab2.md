@@ -217,8 +217,8 @@ int main(int argc, char* argv[]) {
 
 # Tareas a realizar por el alumno
 * Heat2D
-* Sudoku
-* Navier-Stokes
+* Quick-sort
+* Real Fluid Dynamics For Games
 
 
 ## Heat2D
@@ -266,4 +266,53 @@ void main()
      * Presta especial atención a la función *step* y *diff*
      * Se recomienda utilizar la herramienta [Intel vTune](https://www.intel.com/content/www/us/en/develop/documentation/vtune-cookbook/top.html) para encontrar los cuellos de botella y evaluar la escalabilidad de la paralelización OpenMP
      * No olvides que puedes combinar paralelismo del tipo SIMD con paralelismo multi-hilos en los cores
+
+## Quick-sort
+
+## Real Fluid Dynamics For Games
+* Implementación de dinámica de fluidos como resolutor de ecuaciones para [motores de juegos](https://www.youtube.com/watch?v=UM3VFnHBiOU)
+
+### Ecuaciones
+1. $ \frac{\delta u}{\delta t} = -(u \cdot  \nabla)u+\nu \nabla^2u+f $
+2. $ \frac{\delta \rho}{\delta t} = -(u \cdot \nabla)\rho+ \kappa \nabla^2 \rho+S $
+* Donde $u$ corresponde a la velocidad y $\rho$ al movimiento de la densidad repecto a la velocidad
+
+
+* Matemáticamente, el estado de un fluido en un instante de tiempo determinado se modela como un vector de velocidad: una función que asigna un vector de velocidad a cada punto del espacio
+    * Ej: aire de radiador en una habitación, ciculará ascendentemente debido al aumento de calor 
+* El campo velocidad no es visualmente interesante hasta que se produce movimiento de objetos: como particulas de humo, polvo o las hojas
+
+* El modelo se basa en el fluido que recorre una caja, por lo que se modelará como un espacio mediante diferencias finitas
+    * ```u[size], v[size], u_prev[size], v_prev[size]``` representan las velocidades en una malla de tamaño ```size=(N+2)*(N+2)```
+    * ```dens[size], dens_prev[size]``` corresponde a la densidad del fluido
+    * Acceso a las cordenadas se realiza con macro ```#define IX(i,j) ((i)+(N+2)*j)```
+
+![imagen](figures/NavierStokes_flow.png)
+
+## Navier-Stokes
+* Exiten dos ejecutables: **demo** y **headless**
+    * **demo** es simulación gráfica (*botón derecho del ratón* añade densidad, *izquierdo* velocidad al fluido, *v* muestra velocidades y *c* inicializa simulación)
+    * **headless** realiza 2048 iteraciones 
+
+![imagen](figures/demo.png)
+
+
+#### Tareas a considerar
+* Vectorización (recordad bucles independientes, accesos alineados, accesos consecutivos...)
+* Paralelización: conveniente en bucles externos
+* Función ```lin_solve``` del fichero *solver.c* resuelve las ecuaciones aplicando el método numérico Gauss-Seidel
+(más complicado su paralelización)
+    * Conviene resolverlo aplicando el método Jacobi (paralelización evidente) o en su defecto un red-black
+
+##### Método de Gauss-Seidel
+* Presenta dependencias a media que se procesa la resolución de la malla
+
+![imagen](figures/gs_deps.png)
+
+##### Método Red-Black
+* En un stencil 5, la dependiencias de datos están entre celdas vecinas
+    * Si se procesan primero las rojas y luego las negras (damero ajedrez), se pueden procesar todas la rojas simultáneamente
+
+![imagen](figures/rb_gs_red_deps.png)
+![imagen](figures/rb_gs_black_deps.png)
 
