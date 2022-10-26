@@ -298,6 +298,7 @@ void quickSort(int arr[], int low, int high){
 
 ## Real Fluid Dynamics For Games
 * Implementación de dinámica de fluidos como resolutor de ecuaciones para [motores de juegos](https://www.youtube.com/watch?v=UM3VFnHBiOU)
+* Extraido del [repositorio](https://github.com/CFusion-zz/Real-Time-Fluid-Dynamics-for-Games/tree/master/code)
 
 ### Ecuaciones
 * $\frac{\delta u}{\delta t} = -(u \cdot  \nabla)u+\nu \nabla^2u+f$
