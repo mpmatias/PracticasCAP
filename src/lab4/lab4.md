@@ -621,3 +621,174 @@ void encoder(...)
 }
 
 ```
+
+# Herramientas de perfilado
+## Intel Pefs Tool
+* Herramientas usadas durante la asignatura
+    * [Intel Advisor](https://www.intel.com/content/www/us/en/develop/documentation/oneapi-gpu-optimization-guide/top/tools/advisor.html)
+    * [Intel VTune](https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/analyze-performance/accelerators-group/gpu-compute-media-hotspots-analysis.html)
+
+* Para ello vamos a emplear una implementación del **Mandelbrot** [disponible en github](https://github.com/oneapi-src/oneAPI-samples/tree/master/DirectProgramming/C%2B%2B/CombinationalLogic/MandelbrotOMP)
+    * 0: all test; 1: serial; 2: OpenMP SIMD; 3: OpenMP Parallel; 4: OpenMP Both
+    * Nosotros añadiremos una nueva opción 5: **OpenMP offloading**
+
+## Intel Advisor
+* Identificación de regiones potenciales a ser descargadas en GPU: [Offload Modeling](https://www.intel.com/content/www/us/en/develop/documentation/oneapi-gpu-optimization-guide/top/tools/advisor/advisor_offload_modeling.html)
+* Analisis de Modelo Roofline para GPU: [GPU Roofline](https://www.intel.com/content/www/us/en/develop/documentation/oneapi-gpu-optimization-guide/top/tools/advisor/advisor_roofline.html)
+
+### GPU Modeling
+* Intel Advisor permite proyectar descarga con el análisis **GPU Modeling**
+* Dos alternativas:
+    1. Proyección con el análisis ```advisor-gui```
+        * Modelo de GPU: **Target Platform Model**
+    2. Por línea de comandos con ```advisor```
+
+
+![](figures/advisor-mandelbrot.png)
+
+
+* También es posible realizar el análisis por línea de comandos para posterior visualización
+
+```bash
+user@system:~$ advisor --collect=survey --project-dir=./parallel_mandel --stackwalk-mode=online --static-instruction-mix -- ./mandelbrot 3
+user@system:~$ advisor --collect=tripcounts --project-dir=./parallel_mandel --flop --target-device=gen9_gt2 -- ./mandelbrot 3
+user@system:~$ advisor --collect=projection --project-dir=./parallel_mandel --config=gen9_gt2 --no-assume-dependencies
+...
+Measured CPU Time: 0.150s    Accelerated CPU+GPU Time: 0.132s
+Speedup for Accelerated Code: 2.4x    Number of Offloads: 1    Fraction of Accelerated Code: 27%
+
+Top Offloaded Regions
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+ Location                                                | CPU          | GPU          | Estimated Speedup | Bounded By             | Data Transferred 
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+ [loop in main]                                          |       0.030s |       0.012s |             2.44x | Compute                |           0.000B
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+```
+
+
+### Ejemplo de uso
+1. Modificar el fichero **main.cpp** añadiendo una nueva opción que invoque la función  *omp_mandelbrot_offloading* con la correspondiente salida png
+2. Añadir dicha función a **mandelbrot.hpp**
+
+
+```cpp
+int main(int argc, char* argv[]) {
+...
+  case 5: {
+    printf("\nStarting OMP Mandelbrot offloading...\n");
+    timer.start();
+    output = omp_mandelbrot_offloading(x0, y0, x1, y1, width, height, max_depth);
+    timer.stop();
+    printf("Calculation finished. Processing time was %.0fms\n",
+           timer.get_time() * 1000.0);
+    printf("Saving image as mandelbrot_offload_parallel.png\n");
+    write_image("mandelbrot_offload_parallel.png", width, height, output);
+    _mm_free(output);
+    break;
+  }
+... 
+}
+```
+
+3. Añadir el código offloading en **mandelbrot.cpp** con la correspondiente ```#pragma omp target```
+
+```cpp
+unsigned char* omp_mandelbrot_offloading(double x0, double y0, double x1, 
+  double y1, int width, int height, int max_depth) {
+
+  double xstep = (x1 - x0) / width;
+  double ystep = (y1 - y0) / height;
+  unsigned char* output = static_cast<unsigned char*>(
+      _mm_malloc(width * height * sizeof(unsigned char), 64));
+
+
+// Traverse the sample space in equally spaced steps with width * height
+// samples
+#pragma omp target teams distribute \
+  parallel for simd collapse(2) \
+  map(from:output[0:height*width]) map (to:height,width,xstep,ystep,max_depth)
+  for (int j = 0; j < height; ++j) {
+    for (int i = 0; i < width; ++i) {
+      double z_real = x0 + i * xstep;
+      double z_imaginary = y0 + j * ystep;
+      double c_real = z_real;
+      double c_imaginary = z_imaginary;
+
+....
+
+      output[j * width + i] = static_cast<unsigned char>(
+          static_cast<double>(depth) / max_depth * 255);
+    }
+  }
+  return output;
+}
+```
+
+#### Análisis GPU Roofline Insights
+* Vamos a comprobar la ganancia con el análisis **GPU Roofline Insights**
+    * Recordar la opción 5 del mandelbrot para seleccionar el código offloading
+    * EU Threading occupancy: **94.8%** en mi sistema
+
+![](figures/advisor-mandelbrot-analysis.png)
+
+
+* Se puede visualizar cada uno de los kernels: *omp_mandelbrot_offloading_:264*
+    * **Compute bound** 
+    * Performance: 32.47Glops (float)
+    * Bounded by DP Vector MAD Peak (Utilization: 30%)
+
+![](figures/advisor-mandelbrot-analysis-roofline.png)
+
+
+* Vamos a comprobar la ganancia con el análisis **GPU Roofline Insights**
+* ... pero por línea de comandos añadiendo la opción "--profile-gpu" seleccionando la opción 5(offloading)
+
+```bash
+user@system:~$ advisor --collect=survey --flop --profile-gpu --project-dir=./parallel_mandel -- ./mandelbrot 5
+
+Program Elapsed Time: 4,16s
+
+CPU Time: 4,14s
+
+GPU Time: 0,02s
+Data Transfer Time: < 0,01s
+EU Array Active / Stalled / Idle: 99,3% / 0,5% / 0,1%
+
+Top GPU Hotspots:
+            Kernel                Time    Calls   Active   Stalled    Idle    EU Occupancy   Threads Started   
+_______________________________________________________________________________________________________________
+omp_mandelbrot_offloading$o...   0.015s       1    99.3%      0.5%     0.1%          97.3%               672 
+```
+
+
+## Intel VTune
+* Análisis **GPU Offload** determina el uso de la GPU
+    * Más [info en la guía de uso](https://www.intel.com/content/www/us/en/develop/documentation/oneapi-gpu-optimization-guide/top/tools/vtune.html)
+
+* Métricas de ancho de banda con los diferentes niveles de la jerarquía de memoria
+* Perfilado de hilo de ejecución
+* Detalle del código y tiempo de ejecución de las tareas (CPU-GPU)
+
+![Fig: Intel VTune](figures/vtune-gpu.png)
+
+
+### Análisis GPU Compute/Media Hotspots
+* Análisis **GPU Compute/Media Hotspots**. Más info en la [Guía VTune](https://www.intel.com/content/www/us/en/develop/documentation/vtune-help/top/analyze-performance/accelerators-group/gpu-offload-analysis.html)
+    * Aunque la UE Array Stalled parece que es muy alto, es debido a la visualización y profiling simulténeo
+
+![Fig: Resultado obtenido para el ejemplo del mandelbrot](figures/vtune-mandelbrot.png)
+
+* En la solapa **"Graphics"**  muestra un resumen de la ejecución
+    * EU array: 98.2% en consonancia con lo medido con el Advisor
+    * Visualizción de aspectos como transferencia entre los niveles de memoria 
+        * Aunque no se observa ningún problema porque es *compute-bound*
+  
+![Fig: Resumen de ejecución del ejemplo con Intel VTune](figures/vtune-mandelbrot-preview.png)
+
+
+### Análisis Detallado de uso de GPU
+* Para un análisis más detallado de ejecución ir a solapa **"Platform"**
+    * Muestra visión del uso de GPU y CPU
+    * En nuestro ejemplo hay que hacer zoom para ver uso GPU 
+
+![Fig: Uso de GPU con cada hilo para Mandelbrot](figures/vtune-mandelbrot-gpu_usage.png)
