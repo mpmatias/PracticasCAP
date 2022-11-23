@@ -3,6 +3,16 @@
 * Familiarizarse con la programación por medio de directivas con OpenMP
 * Evaluar las mejoras/speedup
 
+# Recursos
+## Recursos disponibles
+* Recordad la información de la asignatura disponible en el Campus Virtual. [Modulo 6: Computación heterogénea](https://cvmdp.ucm.es/moodle/course/view.php?id=40889#section-7)
+
+* Cuadernos de Jupyter disponibles para ser ejecutados en el [Intel-DevCloud](https://devcloud.intel.com/oneapi/get_started/)
+    * Introducción a [OpenMP Offload](https://github.com/oneapi-src/oneAPI-samples/blob/master/DirectProgramming/C%2B%2B/Jupyter/OpenMP-offload-training/intro)
+    * Gestión y [manejo de datos](https://github.com/oneapi-src/oneAPI-samples/blob/master/DirectProgramming/C%2B%2B/Jupyter/OpenMP-offload-training/datatransfer) con OpenMP-target
+    * Expresión y [explotación de los niveles de paralelismo en GPU](https://github.com/oneapi-src/oneAPI-samples/blob/master/DirectProgramming/C%2B%2B/Jupyter/OpenMP-offload-training/parallelism)
+    * Memoria compartida unificada o [USM](https://github.com/oneapi-src/oneAPI-samples/blob/master/DirectProgramming/C%2B%2B/Jupyter/OpenMP-offload-training/USM)
+
 
 # Entorno
 ## OpenMP
