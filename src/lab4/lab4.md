@@ -342,7 +342,7 @@ Target OPENCL RTL --> Number of teams = {256, 1, 1}
 * Clausula *[collapse(4)](Best-practices/test_no_target_enter_exit_data.cpp)* para mejorar la "ocupación de GPU"
 * Kernels generados para las líneas **47** y **71** con el particionado Team sizes:{16,1,1} y Número de teams: {128,1,1}
 
-``bash
+```bash
 user@system:~$ icpx -fiopenmp -fopenmp-targets=spir64 test_no_target_enter_exit_data.cpp
 user@system:~$ OMP_TARGET_OFFLOAD=MANDATORY LIBOMPTARGET_DEBUG=1 ./a.out
 ...
