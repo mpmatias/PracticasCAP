@@ -5,9 +5,11 @@
 #include "steano_routines.h"
 #include "io_routines.h"
 
+#define STR_LEN 200
+
 int main(int argc, char **argv)
 {
-	char file_in[20], file_out[20], file_logo[20];
+	char file_in[STR_LEN], file_out[STR_LEN], file_logo[STR_LEN];
 
 	if (argc<3){
 		printf("./exec image_in.png logo.png image_out.png\n");
