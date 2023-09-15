@@ -49,7 +49,7 @@ int main(int argv, char* argc[]){
     float* potential = (float*) malloc(sizeof(float)*n*n);
 
     // Initializing array of charges
-    printf("Initialization...");
+    printf("Initialization...\n");
 
     for (size_t i=0; i<n; i++) {
       chg[i].x = rngNumber(-5.0, 5.0, 1000);
@@ -86,6 +86,10 @@ int main(int argv, char* argc[]){
 	       t, (t1-t0), HztoPerf/(t1-t0), (t<=skipTrials?"*":""));
 	fflush(stdout);
     }
+    double sum_pot = 0.0;
+    for (int i=0; i<n*n; i++)
+    	sum_pot += potential[i];
+    	 
     perf/=(double)(nTrials-skipTrials); 
     dperf=sqrt(dperf/(double)(nTrials-skipTrials)-perf*perf);
     printf("-----------------------------------------------------\n");
@@ -93,5 +97,6 @@ int main(int argv, char* argc[]){
 	   "Average performance:", "", perf, dperf);
     printf("-----------------------------------------------------\n");
     printf("* - warm-up, not included in average\n\n");
+    printf("Sum_Pot = %lf\n", sum_pot);
     free(potential);
 }

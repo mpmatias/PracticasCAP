@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <omp.h>
 #include <cmath>
+#include <immintrin.h>
 
 #include "cpu_time.hpp"
 
@@ -24,13 +25,17 @@ void CalculateElectricPotential(
         float & phi  // Output: electric potential
         ) {
     phi=0.0f;
-#pragma vector aligned
+    float *x = chg.x;
+    float *y = chg.y;
+    float *z = chg.z;
+    float *q = chg.q;
+//#pragma omp simd aligned(x, y, z, q:64) reduction(-:phi)
     for (int i=0; i<chg.m; i++)  {
         // Unit stride: (&chg.x[i+1] - &chg.x[i]) == sizeof(float)
-        const float dx=chg.x[i] - Rx;
-        const float dy=chg.y[i] - Ry;
-        const float dz=chg.z[i] - Rz;
-        phi -= chg.q[i] / sqrtf(dx*dx+dy*dy+dz*dz);
+        const float dx=x[i] - Rx;
+        const float dy=y[i] - Ry;
+        const float dz=z[i] - Rz;
+        phi -= q[i] / sqrtf(dx*dx+dy*dy+dz*dz);
     }
 }
 
@@ -60,7 +65,7 @@ int main(int argv, char* argc[]){
     float* potential = (float*) _mm_malloc(sizeof(float)*n*n, alignment);
 
     // Initializing array of charges
-    printf("Initialization...");
+    printf("Initialization...\n");
 
     for (size_t i=0; i<n; i++) {
       chg.x[i] = rngNumber(-5.0, 5.0, 1000);
@@ -97,6 +102,10 @@ int main(int argv, char* argc[]){
 	       t, (t1-t0), HztoPerf/(t1-t0), (t<=skipTrials?"*":""));
 	fflush(stdout);
     }
+    double sum_pot = 0.0;
+    for (int i=0; i<n*n; i++)
+    	sum_pot += potential[i];
+    	 
     perf/=(double)(nTrials-skipTrials); 
     dperf=sqrt(dperf/(double)(nTrials-skipTrials)-perf*perf);
     printf("-----------------------------------------------------\n");
@@ -104,9 +113,10 @@ int main(int argv, char* argc[]){
 	   "Average performance:", "", perf, dperf);
     printf("-----------------------------------------------------\n");
     printf("* - warm-up, not included in average\n\n");
-    _mm_free(potential);
-    _mm_free(chg.x);
-    _mm_free(chg.y);
-    _mm_free(chg.z);
-    _mm_free(chg.q);
+    printf("Sum_Pot = %lf\n", sum_pot);
+    free(potential);
+    free(chg.x);
+    free(chg.y);
+    free(chg.z);
+    free(chg.q);
 }

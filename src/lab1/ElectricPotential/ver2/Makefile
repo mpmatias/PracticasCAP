@@ -1,5 +1,5 @@
-CXX = icpc
-COMPFLAGS = -g -std=c++11 -O2 -xHost -I.
+CXX = icpx
+COMPFLAGS = -g -std=c++11 -O2 -I. -xHost
 INCLUDES = 
 
 CXXFLAGS = $(COMPFLAGS) 
@@ -9,10 +9,7 @@ SOURCES = main.cpp
 ADVPRJ = "./adv-ver2"
 
 ifeq ($(REPORT), yes)
-	CXXFLAGS+=-qopt-report=5
-ifeq ($(FILTER), yes) 
-	CXXFLAGS+=-qopt-report-phase=vec -qopt-report-filter="main.cc,15-25"
-endif
+	CXXFLAGS+=-qopt-report=3
 endif
 
 .SUFFIXES: .o .cpp
