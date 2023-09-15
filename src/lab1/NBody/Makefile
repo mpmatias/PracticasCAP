@@ -2,7 +2,7 @@ NAME=nbody
 
 CC=icx
 
-CFLAGS=-O2 -g -I. -xHost
+CFLAGS=-g -O2 -I. -xHost
 
 DEPS = gtime.h memory.h nbody.h nbody_routines.h
 
@@ -11,11 +11,11 @@ OBJ = gtime.o memory.o nbody.o nbody_routines.o
 LIB = -lm
 
 %.o: %.c $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) $(CFLAGS) -c -o $@ $< 
 
 $(NAME): $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS) $(LIB)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIB)
 
 
 clean: 
-	rm -f *.o *.optrpt $(NAME)
+	rm -f *.o *.optrpt $(NAME) *.opt.yaml
