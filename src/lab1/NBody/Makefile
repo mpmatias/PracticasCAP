@@ -1,8 +1,8 @@
 NAME=nbody
 
-CC=icc
+CC=icx
 
-CFLAGS=-O2 -g -qopt-report=3 -xhost -I.
+CFLAGS=-O2 -g -I. -xHost
 
 DEPS = gtime.h memory.h nbody.h nbody_routines.h
 

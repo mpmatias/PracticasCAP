@@ -23,7 +23,7 @@ double solutionPos(body *p, int n)
 
 int main(const int argc, const char** argv) {
 
-	int nBodies = 1000;
+	int nBodies = 5000;
 	if (argc > 1) nBodies = atoi(argv[1]);
 
 	const float dt = 0.01f; // time step
