@@ -176,13 +176,27 @@ LOOP END
     3. Eliminación de conversión de tipos de datos (float/double)
     4. Accesos a memoria (**¿stride?**): SoA vs AoS
     5. Memoria alineada
-* Uso de vectorización guiada porque en [algunos códigos](BlackScholes/) aparecen dependencias de datos aparentes que **inhiben la auyto-vectorización** por parte del compilador
-    1. En el directorio "BlackScholes", al compilar con la opción de autovectorizacion (O2) y consultando el report del fichero fuente *black-scholes.c*, se puede ver el mensaje *vector dependence prevents vectorization*
+* Uso de vectorización guiada porque en [algunos códigos](LU/) aparecen dependencias de datos aparentes que **inhiben la auyto-vectorización** por parte del compilador
+    1. En el directorio "LU", al compilar con la opción de autovectorizacion (O2) y consultando el report del fichero fuente *lu.cc*, se puede ver el mensaje *vector dependence prevents vectorization* en la función que implementa la factorización LU: `LU_decomp`
     2. Se recomiendo usar alguna de las *pragma* estudias para "forzar" al compilador a generar código vectorial
 ```sh
-LOOP BEGIN at black-scholes.c(82,5)
-   remark #15344: loop was not vectorized: vector dependence prevents vectorization. First dependence is shown below. Use level 5 report for details
-   remark #15346: vector dependence: assumed ANTI dependence between s0[i] (84:13) and vput[i] (100:9)
+LOOP BEGIN at lu.cc (14, 3)
+    remark #15553: loop was not vectorized: outer loop is not an auto-vectorization candidate.
+
+    LOOP BEGIN at lu.cc (15, 5)
+        remark #15553: loop was not vectorized: outer loop is not an auto-vectorization candidate.
+
+        LOOP BEGIN at lu.cc (17, 7)
+            remark #15344: Loop was not vectorized: vector dependence prevents vectorization
+            remark #15346: vector dependence: assumed FLOW dependence between A (18:13) and A (18:27) 
+            remark #15346: vector dependence: assumed FLOW dependence between A (18:13) and A (18:16) 
+            remark #25439: Loop unrolled with remainder by 4
+        LOOP END
+
+        LOOP BEGIN at lu.cc (17, 7)
+        <Remainder loop>
+        LOOP END
+    LOOP END
 LOOP END
 ```
 
