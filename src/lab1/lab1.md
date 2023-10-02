@@ -10,9 +10,12 @@
 ```console
 user@lab:~ $  more /proc/cpuinfo 
 ...
-processor	: 3
+processor : 0
 ...
-model name	: Intel(R) Xeon(R) CPU E3-1225 v3 @ 3.20GHz
+model name : 12th Gen Intel(R) Core(TM) i7-12700
+...
+cpu cores : 16
+...
 ...
 flags		: ... avx ... avx2 ...
 ....
@@ -22,23 +25,17 @@ flags		: ... avx ... avx2 ...
 * Opciones del compilador para llevar a cabo optimizaciones
 
 ## Autovectorización
-* La opción **-O2** del compilador de [Intel® C++ Compiler Classic](https://www.intel.com/content/www/us/en/developer/tools/oneapi/hpc-toolkit.html#gs.cddfmt) habilita al autovectorizador
+* La opción **-O2** del compilador de [Intel® oneAPI DPC++/C++ Compiler](https://www.intel.com/content/www/us/en/docs/dpcpp-cpp-compiler/developer-guide-reference/2023-0/overview.html) habilita al autovectorizador
 
 ```console
-user@lab:~ $ icc -o fooO2 foo.c -O2 -qopt-report=3 -xhost -lm
+user@lab:~ $ icx -o fooO2 foo.c -O2 -qopt-report=2
+user@lab:~ $ more foo.optrpt 
 ....
-LOOP BEGIN at fooO0.c(23,2) inlined into fooO0.c(58,2)
-   remark #15300: LOOP WAS VECTORIZED
-   remark #15442: entire loop may be executed in remainder
-   remark #15450: unmasked unaligned unit stride loads: 1 
-   remark #15451: unmasked unaligned unit stride stores: 1 
-   remark #15475: --- begin vector cost summary ---
-   remark #15476: scalar cost: 111 
-   remark #15477: vector cost: 20.750 
-   remark #15478: estimated potential speedup: 4.780 
-   remark #15482: vectorized math library calls: 1 
-   remark #15487: type converts: 2 
-   remark #15488: --- end vector cost summary ---
+LOOP BEGIN at foo.c (23, 2)
+<Multiversioned v1>
+    remark #25228: Loop multiversioned for Data Dependence
+    remark #15300: LOOP WAS VECTORIZED
+    remark #15305: vectorization support: vector length 2
 LOOP END
 ```
 
@@ -115,32 +112,46 @@ void axpy(float *c, float *a, float *b, float cte, int n)
     * **-lm** enlaza con la librería matemática
 
 ```sh
-user@lab:~ $ icc -o fooO0 foo.c -O0 -qopt-report=3 -lm
+user@lab:~ $ icx -o fooO1 foo.c -O1 -qopt-report=3 -lm
 user@lab:~ $ more foo.optrpt 
-Intel(R) Advisor can now assist with vectorization and show optimization
-  report messages with your source code.
-See "https://software.intel.com/en-us/intel-advisor-xe" for details.
+Global optimization report for : get_time_milisec
+=================================================================
 
-Intel(R) C Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.5.0 Build 20211109_000000
+Global optimization report for : foo
+
+LOOP BEGIN at foo.c (23, 2)
+LOOP END
+...
 ```
 
-    * Modificando la opción de compilación a **O2**: Activa vectorización, en el **reporte indica que en la línea 30** está vectorizado
+    * Modificando la opción de compilación a **O2**: Activa vectorización, en el **reporte indica que en la línea 23** está vectorizado
 
 
 ```sh
-user@lab:~ $ icc -o foo02 foo.c -O2 -qopt-report=3 -lm
+user@lab:~ $ icx -o foo02 foo.c -O2 -qopt-report=3 -lm
 user@lab:~ $ more foo.optrpt 
 ....
-LOOP BEGIN at foo.c(30,2) inlined into foo.c(60,43)
-   remark #15300: LOOP WAS VECTORIZED
-   remark #15442: entire loop may be executed in remainder
-   remark #15448: unmasked aligned unit stride loads: 1 
-   remark #15475: --- begin vector cost summary ---
-   remark #15476: scalar cost: 5 
-   remark #15477: vector cost: 1.250 
-   remark #15478: estimated potential speedup: 3.480 
-   remark #15488: --- end vector cost summary ---
+Global optimization report for : get_time_milisec
+=================================================================
+
+Global optimization report for : foo
+
+LOOP BEGIN at foo.c (23, 2)
+<Multiversioned v2>
+    remark #15319: Loop was not vectorized: novector directive used
 LOOP END
+
+LOOP BEGIN at foo.c (23, 2)
+<Multiversioned v1>
+    remark #25228: Loop multiversioned for Data Dependence
+    remark #15300: LOOP WAS VECTORIZED
+    remark #15305: vectorization support: vector length 2
+LOOP END
+
+LOOP BEGIN at foo.c (23, 2)
+<Remainder loop for vectorization>
+LOOP END
+
 
 ....
 ```
@@ -156,7 +167,7 @@ LOOP END
     * ver1: optimizado a la arquitectatura *target*, pero con ineficiencias de acceso a memoria (stride!=1)
         * Propuesta cambiar AoS por SoA
     * ver2: optimización de memoria
-    * ver3: optimizacion de memoria a accesos alineados
+    * ver3: optimizacion de memoria a accesos alineados (*compilador no genera accesos alineados*)
 
 # Tareas a realizar por el alumno
 * Aplicar explotación SIMD utilizando la vectorización automática por parte del compilador en la aplicación de N-Body cuyo [código está disponible en el repositorio](NBody/)

@@ -1,5 +1,5 @@
 CXX = icpx
-COMPFLAGS = -g -std=c++11 -O2 -I. -xHost -qopenmp
+COMPFLAGS = -g -std=c++11 -O3 -I. -xHost -qopenmp
 INCLUDES = 
 
 CXXFLAGS = $(COMPFLAGS) 

@@ -1,4 +1,4 @@
-/* icc -o fooO0 fooO0.c -O0 -qopt-report=3 -xhost -lm */
+/* icx -o fooO0 fooO0.c -O0 -qopt-report=3 -xhost -lm */
 #include <stdio.h>
 #include <malloc.h>
 #include <stdlib.h>
