@@ -19,9 +19,9 @@ double get_time_milisec(){
 
 
 void foo( float* sth, float* theta, int p) {
-
+	float pi = 3.1415927;
 	for(int i = 0; i < p; i++) 
-		sth[i] = sin(theta[i]+3.1415927);
+		sth[i] = sinf(theta[i]+pi);
 }
 
 float reduction(float *a, int p)
