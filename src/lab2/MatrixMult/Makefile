@@ -24,10 +24,10 @@
 SHELL = /bin/sh
 
 
-PARAMODEL = -DUSE_OMP -fopenmp	# Use OpenMP for multithreading
+PARAMODEL = -DUSE_OMP -qopenmp	# Use OpenMP for multithreading
 
-ICC     = icc
-CFLAGS  = -g -O3
+ICC     = icx
+CFLAGS  = -O3
 OPTFLAGS = -xhost 
 
 
