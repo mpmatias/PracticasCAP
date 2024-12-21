@@ -1,5 +1,5 @@
 CC=icx
-CFLAGS=-O2 -qopt-report=1 -qopt-report -std=c99 -Wall -Wextra -Wno-unused-parameter -qopenmp
+CFLAGS=-O2 -qopt-report=1 -qopt-report -Wall -Wextra -Wno-unused-parameter -qopenmp
 LDFLAGS=
 
 TARGETS=demo headless

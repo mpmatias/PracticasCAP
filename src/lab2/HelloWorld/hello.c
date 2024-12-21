@@ -1,5 +1,5 @@
-/* To compile Classic Compiler: icc -o hello.icc hello.c -qopenmp */
-/* To compile oneAPI DPC++/C++: icx -o hello.icx hello.c -qopenmp */
+/* To compile with gcc:  gcc -o hello-gcc hello.c -fopenmp */
+/* To compile with Intel oneAPI DPC++/C++: icx -o hello-icx hello.c -qopenmp */
 /* To execute: export OMP_NUM_THREADS=4; ./hello.icc */
 
 #include <stdio.h>
